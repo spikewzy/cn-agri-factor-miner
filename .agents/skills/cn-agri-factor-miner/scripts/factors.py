@@ -111,6 +111,8 @@ def future_invariance(spec, records, at, fit_cutoff, computer=compute):
     extra.update(value=987654321, revision=extra['revision'] + 999,
                  published_at=(t + dt.timedelta(days=50)).isoformat(),
                  available_at=(t + dt.timedelta(days=51)).isoformat(), event_id='future-invariance-injection')
+    if extra.get('availability_basis') == 'first_seen':
+        extra['first_seen_at'] = extra['available_at']
     baseline = computer(spec, AsOf(records), at, fit_cutoff)['value']
     for variant in (old, changed, records + [extra]):
         if computer(spec, AsOf(variant), at, fit_cutoff)['value'] != baseline:

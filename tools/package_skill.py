@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 import zipfile
 
-VERSION = '0.2.0'
+VERSION = '0.3.0'
 NAME = 'cn-agri-factor-miner'
 REPO = Path(__file__).resolve().parents[1]
 SOURCE = REPO / '.agents/skills' / NAME
@@ -29,7 +29,7 @@ def workbuddy_header(text):
     description = scalar('description')
     fields = {'name': NAME, 'display_name': '中国农业基本面因子研究',
               'description': description,
-              'description_zh': '研究中国农业期货基本面因子：时点数据、有限假设、安全计算、外部评估与人工审核。不用于非农业期货、股票估值或自动交易。',
+              'description_zh': '主动找公开资料并调用已有数据接口，研究中国农业期货基本面因子：时点数据、有限假设、外部评估与人工审核。不用于非农业期货、股票估值或自动交易。',
               'description_en': description, 'version': VERSION, 'author': 'spikewzy'}
     return '---\n' + ''.join(k + ': ' + json.dumps(v, ensure_ascii=False) + '\n' for k, v in fields.items()) + '---' + body
 

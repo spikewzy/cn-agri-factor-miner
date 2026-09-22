@@ -29,7 +29,7 @@
 
 ## 包格式与验证边界
 
-版本 0.2.0 提供两个扁平 ZIP：解压根目录直接包含 SKILL.md、scripts/、references/、templates/、examples/、tests/ 和 README.md。不能把整个 GitHub 仓库 ZIP（带 `.agents/skills/...` 多层目录）当作 WorkBuddy 技能导入包。包由 `tools/package_skill.py` 从唯一源目录生成，附逐文件 SHA-256 清单。
+版本 0.3.0 提供两个扁平 ZIP：解压根目录直接包含 SKILL.md、scripts/、references/、templates/、examples/、tests/ 和 README.md。不能把整个 GitHub 仓库 ZIP（带 `.agents/skills/...` 多层目录）当作 WorkBuddy 技能导入包。包由 `tools/package_skill.py` 从唯一源目录生成，附逐文件 SHA-256 清单。
 
 WorkBuddy 专用包与通用包只允许 frontmatter / Codex 展示元数据存在差异；代码、因子规则、人工审核点和示例相同。相同数据与规格可重算；旧运行快照包含绝对 artifact 路径，不能承诺把旧 RUN_DIR 随意搬到另一机器后直接续跑，应在新路径建关联运行并保留历史。
 
@@ -42,3 +42,7 @@ WorkBuddy 专用包与通用包只允许 frontmatter / Codex 展示元数据存�
 - [腾讯云 WorkBuddy Enterprise：技能](https://cloud.tencent.com/document/product/1831/134432)（页面检索可见上传本地技能包说明，直接正文抓取超时；客户端按钮随版本变化）
 
 市场上架是另一项操作。本仓库只分发本地导入包，未向 WorkBuddy 技能市场提交或声称官方认证。
+
+## 主动取数能力
+
+核心研究脚本仍只需 Python 标准库。主动取数另外使用宿主搜索/浏览、网络和已有的数据权限；Choice 额外需要 EmQuantAPI 与 pandas。Tushare 可用宿主连接器或环境变量，不需要固定 MCP。缺少某项能力时继续其他来源并记下阻塞，见 [取数流程](data-acquisition.md)。

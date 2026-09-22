@@ -32,12 +32,19 @@ class AsOf:
         self.__records = copy.deepcopy(records)
         seen = {}
         for r in self.__records:
-            required = ('field', 'period_start', 'period_end', 'published_at', 'available_at',
+            required = ('field', 'period_start', 'period_end', 'available_at',
                         'source', 'revision', 'kind', 'unit', 'value', 'availability_basis', 'event_id')
             missing = [k for k in required if k not in r or r[k] is None or r[k] == '']
             if missing:
                 raise BlockedData([r.get('field', '?') + '.' + k for k in missing])
-            pub, avail = timestamp(r['published_at']), timestamp(r['available_at'])
+            avail = timestamp(r['available_at'])
+            if r['availability_basis'] == 'first_seen':
+                if timestamp(r.get('first_seen_at', '')) != avail or not r.get('raw_sha256') or not r.get('receipt_id'):
+                    raise IntegrityError('First-seen data requires capture time and raw source receipt')
+                pub = timestamp(r['published_at']) if r.get('published_at') else avail
+            else:
+                if not r.get('published_at'): raise BlockedData([r['field'] + '.published_at'])
+                pub = timestamp(r['published_at'])
             if pub > avail:
                 raise IntegrityError('Availability precedes publication')
             start, end = dt.date.fromisoformat(r['period_start']), dt.date.fromisoformat(r['period_end'])
@@ -45,7 +52,7 @@ class AsOf:
                 raise IntegrityError('Invalid period/kind')
             if r['kind'] == 'realization' and end > pub.date():
                 raise IntegrityError('Realization published before outcome period ended')
-            if r['availability_basis'] not in ('observed', 'reconstructed', 'unknown', 'synthetic'):
+            if r['availability_basis'] not in ('observed', 'reconstructed', 'unknown', 'synthetic', 'first_seen'):
                 raise IntegrityError('Invalid availability provenance')
             if not isinstance(r['revision'], int) or r['revision'] < 0:
                 raise IntegrityError('Revision must be a nonnegative integer')
@@ -68,7 +75,7 @@ class AsOf:
         for r in self.__records:
             if r['field'] != field or r['source'] != rule['source'] or r['kind'] != rule['kind']:
                 continue
-            if timestamp(r['published_at']) > t or timestamp(r['available_at']) > t:
+            if (r.get('published_at') and timestamp(r['published_at']) > t) or timestamp(r['available_at']) > t:
                 continue
             if r['kind'] == 'realization' and dt.date.fromisoformat(r['period_end']) > t.date():
                 continue
@@ -124,6 +131,6 @@ def deduplicate_events(events):
         old = unique.get(key)
         if old and (old['value'], old['unit'], old['kind']) != (event['value'], event['unit'], event['kind']):
             raise IntegrityError('Conflicting extracted values for one canonical event')
-        if old is None or timestamp(event['published_at']) < timestamp(old['published_at']):
+        if old is None or timestamp(event.get('published_at') or event['available_at']) < timestamp(old.get('published_at') or old['available_at']):
             unique[key] = copy.deepcopy(event)
     return list(unique.values())

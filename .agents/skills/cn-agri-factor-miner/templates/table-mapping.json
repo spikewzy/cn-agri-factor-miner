@@ -1,0 +1,14 @@
+{
+  "availability": "first_seen",
+  "commodity": "soybean_meal",
+  "fields": [{
+    "field": "meal_stock",
+    "source": "replace_with_actual_publisher_and_sample",
+    "date_column": "observation_date",
+    "value_column": "stock",
+    "unit": "tonne",
+    "kind": "realization",
+    "filters": {},
+    "input_rule": {"max_release_age_days": 10, "max_observation_age_days": 14}
+  }]
+}

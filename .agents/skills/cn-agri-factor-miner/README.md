@@ -1,21 +1,21 @@
 # cn-agri-factor-miner
 
-## 跨 Agent 安装：Codex、WorkBuddy 与其他工具（v0.2.0）
+## 跨 Agent 安装：Codex、WorkBuddy 与其他工具（v0.3.0）
 
 本技能不依赖 Codex 专有 API。Python 计算与审核规则共用一份代码，不同宿主仅使用不同的安装包与调用方式。
 
 | 使用场景 | 获取方式 | 调用方式 | 验证范围 |
 |---|---|---|---|
 | Codex | 克隆仓库或用 skill-installer 安装 `.agents/skills/cn-agri-factor-miner` | `$cn-agri-factor-miner` 或自然语言 | 本地 CLI、审核暂停和完整测试已验证 |
-| WorkBuddy | 下载 Releases 中的 `cn-agri-factor-miner-workbuddy-v0.2.0.zip` | 导入并启用后，用技能名自然语言调用 | 按官方格式适配，打包后的脚本已测试；未实测客户端 UI |
-| 其他支持 SKILL.md 的 agent | 下载 `cn-agri-factor-miner-portable-v0.2.0.zip`，按该 agent 的导入入口安装 | 产品的技能选择器或自然语言 | 移动目录后的执行已验证；不保证所有宿主自动识别 |
+| WorkBuddy | 下载 Releases 中的 `cn-agri-factor-miner-workbuddy-v0.3.0.zip` | 导入并启用后，用技能名自然语言调用 | 按官方格式适配，打包后的脚本已测试；未实测客户端 UI |
+| 其他支持 SKILL.md 的 agent | 下载 `cn-agri-factor-miner-portable-v0.3.0.zip`，按该 agent 的导入入口安装 | 产品的技能选择器或自然语言 | 移动目录后的执行已验证；不保证所有宿主自动识别 |
 | 无技能管理但有文件/终端工具的 agent | 解压通用包，将 SKILL.md 的绝对路径交给 agent | 明确要求读取该文件并执行 | 手动加载模式；计算仍需本地 Python |
 
-下载入口：[GitHub Releases](https://github.com/spikewzy/cn-agri-factor-miner/releases/tag/v0.2.0)。不要把 GitHub 的整个源码 ZIP 当作 WorkBuddy 技能导入包。
+下载入口：[GitHub Releases](https://github.com/spikewzy/cn-agri-factor-miner/releases/tag/v0.3.0)。不要把 GitHub 的整个源码 ZIP 当作 WorkBuddy 技能导入包。
 
 ### WorkBuddy：逐步导入与首次使用
 
-1. 下载 **`cn-agri-factor-miner-workbuddy-v0.2.0.zip`**。包内根目录直接是 `SKILL.md` 和资源目录，已补齐 WorkBuddy 开放平台要求的中英文描述、版本和作者字段。
+1. 下载 **`cn-agri-factor-miner-workbuddy-v0.3.0.zip`**。包内根目录直接是 `SKILL.md` 和资源目录，已补齐 WorkBuddy 开放平台要求的中英文描述、版本和作者字段。
 2. 打开 WorkBuddy 左侧的 **专家·技能·连接器 → 技能**（部分版本直接显示“技能”）。进入 **添加技能 → 上传技能/导入本地技能包**，选择上述 ZIP；具体按钮名称以你的客户端版本为准。导入后在已安装列表启用它。这里是本地导入，不是公开市场上架。
 3. 新建一个任务，选定你可读写的研究工作目录。让 WorkBuddy 读取完整技能包并定位真实的 `SKILL_DIR`，不要让它猜安装路径。运行目录另选在研究工作区中。
 4. 粘贴下面这段提示词；WorkBuddy 不要求 Codex 的 `$技能名` 写法：
@@ -65,6 +65,36 @@ python3 -m unittest discover -s tests -v
 
 `dist/` 生成通用 ZIP、WorkBuddy ZIP 及对应的逐文件 SHA-256 清单。打包器只读取技能定义，不会打入 `runs/`、本机凭据或研究快照。代码升级会改变既有运行的代码哈希；旧运行应保留并建立关联的新运行，不修改旧记录来绕过校验。
 
+## 让它自己找数据（v0.3.0）
+
+安装后，直接对 Codex、WorkBuddy 或其他兼容 agent 说：
+
+```text
+使用 cn-agri-factor-miner 研究豆粕和豆油，周频决策、两周预测。
+先检查这个项目的已有数据、因子和修正记录；然后主动搜索基本面资料，
+调用已连接的 Tushare 或已有 Choice，补齐能取得的数据。
+保留原始来源、查询参数、抓取时间、发布时间和数据版本，整理数据缺口。
+根据取得的证据提出至多 6 个假设、筛选至多 3 个，并说明反证和所缺数据。
+先给我候选规格与审核材料，在我明确批准前不要计算因子。
+```
+
+它会按品种生成来源计划，实际尝试取数，并用宿主的搜索/浏览能力查阅公开资料。支持 Tushare 仓单/合约接口、Choice `csd/ctr/edb/edbquery`、公开 HTTPS 文件和已有 CSV/JSON。Choice 指标代码、单位和口径需要 agent 从真实目录查证，不能猜。没有凭据也会继续可访问的公开来源；纯聊天或不能联网/执行脚本的宿主会列出能力缺口。
+
+终端快速体验自动取数（替换日期和路径，示例不会执行因子或自动批准）：
+
+```bash
+SKILL_DIR="$(pwd)/.agents/skills/cn-agri-factor-miner"
+RUN_DIR="$(pwd)/runs/real-discovery-001"
+python3 "$SKILL_DIR/scripts/acquire.py" --work "$RUN_DIR/acquisition" start \
+  --commodity 豆粕 豆油 --start 2026-09-01 --end 2026-09-21
+```
+
+使用已配置的 `TUSHARE_TOKEN`；有 Tushare 连接器时也可由 agent 调用并导入返回表格，不需要把 Token 发到聊天。Choice 是可选依赖，需已安装激活 SDK 和 pandas。下载数据放在本地 `runs/`，不随技能发布。
+
+`start` 自动执行接口取数、仓单标准化并输出研究简报；**联网搜索、阅读原文和提出因子由宿主 agent 接着执行**。Python 脚本本身不是一个联网 LLM。完整的搜索留痕、Choice 配置、数据映射、导出与审核衔接见[主动取数教程](references/data-acquisition.md)。
+
+未知历史发布时间的数据按“本次首次取得”保存：能积累前瞻快照，不能直接用于更早决策的回测。仓单也不等于全市场库存；年度供需预测不能充当两周到港预测。
+
 ## 中文说明
 
 这是一个面向**中国农业及农产品加工期货**的跨 Agent 技能，用于把基本面研究整理成可复现、可检验的因子。研究链路是：
@@ -102,11 +132,11 @@ cp -R cn-agri-factor-miner/.agents/skills/cn-agri-factor-miner /path/to/your-pro
 
 也可以在 Codex 中让 `$skill-installer` 从实际 GitHub 仓库安装 `.agents/skills/cn-agri-factor-miner` 目录。技能发现和安装方式参考 [OpenAI 官方技能文档](https://learn.chatgpt.com/docs/build-skills)。如果安装后没有出现在技能列表中，重新打开任务或重启 Codex。
 
-GitHub 提供的是技能源码和安装入口，不会自动提供在线 API、行情数据或运行中的交易服务。安装后，使用者在自己的 agent / Python 环境里运行；接入真实数据和外部评估器需要另行配置。
+GitHub 提供的是技能源码和安装入口，不会自动提供在线 API、行情数据或运行中的交易服务。安装后，使用者在自己的 agent / Python 环境里运行；技能会主动尝试可用数据源；受权限限制的数据和外部评估器仍需配置。
 
 ### 先运行合成数据示例
 
-环境要求：Python 3.9 或更新版本，macOS / Linux；运行脚本只用 Python 标准库。由于记录锁使用 `fcntl`，Windows 原生 Python 未支持，可在 WSL 中使用。
+环境要求：Python 3.9 或更新版本，macOS / Linux；核心计算、Tushare HTTP 和公开文件下载只用 Python 标准库；可选 Choice 取数需 SDK 与 pandas。由于记录锁使用 `fcntl`，Windows 原生 Python 未支持，可在 WSL 中使用。
 
 以下命令在克隆后的仓库根目录执行：
 
@@ -120,12 +150,14 @@ python3 .agents/skills/cn-agri-factor-miner/scripts/demo.py --output runs/my-fir
 
 每次演示请选择新的输出目录，避免覆盖旧记录。结果在 `runs/my-first-demo/demo-report.json`；人工审核包、实验记录和因子面板在其各个子目录中。运行产物不属于技能定义，不需要随公开技能发布。
 
-当前包含 **38 项核心测试（另有 4 项仓库级打包/迁移测试）、353 条合成数据记录和 3 个未经验证的豆粕/豆油假设**：季节性异常库存覆盖、未来两周到港与压榨平衡、受原料和油粕库存约束的压榨利润变化。合成数据只证明流程能够运行，不证明任何因子有预测能力。
+当前包含 **61 项核心与取数测试、4 项打包迁移测试、353 条合成数据记录和 3 个未经验证的豆粕/豆油假设**：季节性异常库存覆盖、未来两周到港与压榨平衡、受原料和油粕库存约束的压榨利润变化。合成数据只证明流程能够运行，不证明任何因子有预测能力。
 
 ### 看懂运行状态
 
 | 状态 | 中文含义 | 下一步 |
 |---|---|---|
+| `READY_FOR_HYPOTHESES` | 已有材料可起草候选，尚不代表可计算或可回测 | 读取证据与缺口，形成有反证的候选规格 |
+| `BLOCKED_ENVIRONMENT` / `BLOCKED_AUTH` | 运行能力或数据权限缺失 | 查看具体原因，并继续其他可访问来源 |
 | `PAUSED_REVIEW` | 尚未取得当前版本的人工批准 | 阅读审核包，再由本人提交对应版本和哈希的决定 |
 | `BLOCKED_DATA` | 缺数据、字段过期或历史可用性不足 | 查看具体缺失字段，准备正确的数据快照 |
 | `BLOCKED_INTEGRITY` / `LEAKAGE_TEST_FAILED` | 时点、数据完整性或泄漏检查失败 | 修复原因并保留失败记录，不能用人工批准绕过 |
@@ -148,7 +180,7 @@ python3 .agents/skills/cn-agri-factor-miner/scripts/demo.py --output runs/my-fir
 
 ---
 
-A host-independent Agent Skill for bounded, evidence-first research on Chinese agricultural futures, with Codex and WorkBuddy packaging. Python 3.9+; standard library only; macOS/Linux (`fcntl` for append-only ledger locking). No API keys, network calls, GPU, database, dashboard, autonomous service or built-in backtester.
+A host-independent Agent Skill for bounded, evidence-first research on Chinese agricultural futures, with Codex and WorkBuddy packaging. Python 3.9+; core and Tushare/public HTTP use the standard library; macOS/Linux (`fcntl` for append-only ledger locking). Core computation uses no credentials or network. Optional acquisition uses public HTTPS, a configured Tushare token or host connector, and an already activated Choice SDK with pandas. No GPU, database, dashboard, autonomous service or built-in backtester.
 
 ## Run the acceptance demonstrations
 
@@ -166,7 +198,9 @@ Choose a fresh output directory on subsequent runs; immutable artifacts are not 
 
 | Demonstration | Expected result |
 |---|---|
-| Unapproved specification | `PAUSED_REVIEW` |
+| Unapproved specification | `READY_FOR_HYPOTHESES` | 已有材料可起草候选，尚不代表可计算或可回测 | 读取证据与缺口，形成有反证的候选规格 |
+| `BLOCKED_ENVIRONMENT` / `BLOCKED_AUTH` | 运行能力或数据权限缺失 | 查看具体原因，并继续其他可访问来源 |
+| `PAUSED_REVIEW` |
 | Normal synthetic computation, three hypotheses | Frozen specs, panels, lineage, diagnostics and requests; `NOT_EVALUATED` |
 | Remove arrival forecasts | `BLOCKED_DATA` listing `arrivals_14d:eligible_vintage` for each affected decision |
 | Deliberately unsafe test double reads future data | `LEAKAGE_TEST_FAILED`; subsequent approval blocked |
@@ -243,7 +277,7 @@ Host-independent setup, WorkBuddy frontmatter and capability fallbacks are docum
 - `scripts/adapter.py`, `cli.py`: external file contract and supervisory commands.
 - `scripts/synthetic.py`, `demo.py`, `examples/`, `tests/`: reusable synthetic examples, positive/negative tests and acceptance demonstrations.
 
-v1 implements only calendar-month historical seasonality and exact next-N-day forecast windows. It checks input unit identity but leaves full formula dimensionality, sample overlap and physical conversions to explicit review. It does not implement crop/lunar calendars, source scraping, exchange session lookup, signature authentication, a global budget database, live trading or performance estimation. Add a new agricultural family through the registry/specification and relevant data checks; new mathematical operators require review/tests.
+v1 implements only calendar-month historical seasonality and exact next-N-day forecast windows. It checks input unit identity but leaves full formula dimensionality, sample overlap and physical conversions to explicit review. It does not implement crop/lunar calendars, universal parsers for arbitrary websites, exchange session lookup, signature authentication, a global budget database, live trading or performance estimation. Add a new agricultural family through the registry/specification and relevant data checks; new mathematical operators require review/tests.
 
 ## Remaining real-research blockers
 

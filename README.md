@@ -10,13 +10,40 @@
 
 [中文使用说明与完整命令](.agents/skills/cn-agri-factor-miner/README.md) · [技能入口](.agents/skills/cn-agri-factor-miner/SKILL.md) · [农业研究检查表](.agents/skills/cn-agri-factor-miner/references/agriculture.md)
 
+## 直接让 Agent 自己找数据
+
+```text
+使用 cn-agri-factor-miner 研究豆粕和豆油，周频决策、预测未来两周。
+先检查项目里的数据、已有因子和修正记录，然后主动搜索官方及行业资料，
+调用已连接的 Tushare 或现有 Choice 获取可用数据。
+保留来源、原始快照、抓取时间、发布时间与修订版本，列出实际缺口。
+根据证据提出至多 6 个假设、筛选至多 3 个，给出机制、反证和候选规格。
+在我明确批准前不要计算因子。
+```
+
+v0.3.0 加入了实际取数代码：Tushare 仓单与合约接口、Choice `csd/ctr/edb/edbquery`、公开 HTTPS 文件以及 CSV/JSON 标准化。内置 17 个农业品种的来源计划，agent 会接着执行公开资料搜索和缺口补充。没有某个付费接口权限时，继续找其他可访问来源。
+
+**分工**：Python 负责接口访问、原始记录、标准化和时点校验；宿主 agent 负责联网搜索、读取报告、核实 Choice 指标与单位、提出经济假设。仅运行终端脚本不会自动调用一个 LLM。
+
+从源码目录体验自动取数：
+
+```bash
+python3 .agents/skills/cn-agri-factor-miner/scripts/acquire.py \
+  --work runs/real-discovery-001 start --commodity 豆粕 豆油 \
+  --start 2026-09-01 --end 2026-09-21
+```
+
+日期改为实际研究区间。脚本使用已配置的 `TUSHARE_TOKEN`，不会输出凭据；有宿主连接器时可由 agent 直接调用后导入，无需另配 Token。Choice 需要已有的 SDK、激活权限及 pandas；不能凭空取得收费数据。详细的来源搜索、Choice 请求格式、数据映射与原研究引擎衔接见[主动取数教程](.agents/skills/cn-agri-factor-miner/references/data-acquisition.md)。
+
+首次下载的旧数据没有历史版本证据时，只能从本次取得时刻起使用，不能按观察日期回填。仓单保留原单位和仓库明细，不能当作全市场库存。演示数据与真实下载数据分别保存。
+
 ## 选择安装方式
 
 | Agent | 安装包 / 源码 | 使用方式 |
 |---|---|---|
 | Codex | 克隆本仓库，或安装 `.agents/skills/cn-agri-factor-miner/` | `$cn-agri-factor-miner` 或自然语言 |
-| WorkBuddy | [下载 WorkBuddy 专用 ZIP](https://github.com/spikewzy/cn-agri-factor-miner/releases/download/v0.2.0/cn-agri-factor-miner-workbuddy-v0.2.0.zip) | 导入、启用后按技能名称调用 |
-| 其他支持 SKILL.md 的 agent | [下载通用 ZIP](https://github.com/spikewzy/cn-agri-factor-miner/releases/download/v0.2.0/cn-agri-factor-miner-portable-v0.2.0.zip) | 按宿主的技能导入方式安装 |
+| WorkBuddy | [下载 WorkBuddy 专用 ZIP](https://github.com/spikewzy/cn-agri-factor-miner/releases/download/v0.3.0/cn-agri-factor-miner-workbuddy-v0.3.0.zip) | 导入、启用后按技能名称调用 |
+| 其他支持 SKILL.md 的 agent | [下载通用 ZIP](https://github.com/spikewzy/cn-agri-factor-miner/releases/download/v0.3.0/cn-agri-factor-miner-portable-v0.3.0.zip) | 按宿主的技能导入方式安装 |
 | 只有文件和终端工具的 agent | 解压通用 ZIP | 明确要求读取 SKILL.md 的绝对路径并遵循它 |
 
 两个包共用研究规则和计算脚本。WorkBuddy 包额外提供中英文描述、版本、作者，移除 Codex 展示元数据；ZIP 根目录直接包含 `SKILL.md`。**不要用 GitHub 的整仓库源码 ZIP 代替技能导入包。**
@@ -85,7 +112,7 @@ python3 .agents/skills/cn-agri-factor-miner/scripts/demo.py --output runs/my-fir
 
 结果见 `runs/my-first-demo/demo-report.json`。再次运行时换一个输出目录，旧记录不会被覆盖。
 
-当前有 38 项核心测试和 4 项打包/迁移测试通过、353 条明确标记的合成记录、3 个未经验证的示例假设。演示覆盖正常计算、缺数阻塞、未来数据泄漏拦截、人工审核暂停及修订恢复。
+当前有 61 项核心与取数测试和 4 项打包/迁移测试通过、353 条明确标记的合成记录、3 个未经验证的示例假设。演示覆盖正常计算、缺数阻塞、未来数据泄漏拦截、人工审核暂停及修订恢复。
 
 若使用解压后的安装包，请将命令中的 `.agents/skills/cn-agri-factor-miner` 换成解压目录的绝对路径，并给输出目录指定技能目录之外的位置。仓库级 `tests/` 是打包测试，仅在源码仓库中运行。
 
@@ -95,7 +122,7 @@ python3 .agents/skills/cn-agri-factor-miner/scripts/demo.py --output runs/my-fir
 python3 tools/package_skill.py --target all --output dist
 ```
 
-发布包和校验清单见 [v0.2.0 Release](https://github.com/spikewzy/cn-agri-factor-miner/releases/tag/v0.2.0)。打包测试会把两种 ZIP 分别解压到含中文和空格的新路径，检查全部核心测试、演示及审批暂停。
+发布包和校验清单见 [v0.3.0 Release](https://github.com/spikewzy/cn-agri-factor-miner/releases/tag/v0.3.0)。打包测试会把两种 ZIP 分别解压到含中文和空格的新路径，检查全部核心测试、演示及审批暂停。
 
 ## 工作流和边界
 
@@ -107,7 +134,7 @@ python3 tools/package_skill.py --target all --output dist
 - 无外部评估器时返回 `NOT_EVALUATED`，不会编造 IC、收益率或夏普比率。
 - 研究库接纳仅供进一步研究和前瞻影子验证，不授权实盘交易。
 
-技能不覆盖非农业期货、股票估值或自动交易，也不内置回测引擎。三个示例仅展示流程，尚无预测能力或收益证据。真实数据、历史发布版本、经核验的合约日历及外部真实合约评估需使用者自行接入。
+技能不覆盖非农业期货、股票估值或自动交易，也不内置回测引擎。三个示例仅展示流程，尚无预测能力或收益证据。技能会主动发现和获取权限范围内的数据；不可访问的数据、缺失的历史版本、合约日历及外部评估仍会列为具体缺口。
 
 ## 目录
 
@@ -116,7 +143,7 @@ python3 tools/package_skill.py --target all --output dist
 ├── SKILL.md          技能触发条件与工作流
 ├── README.md         中英文操作说明
 ├── agents/           Codex 展示元数据
-├── scripts/          计算、时点访问、审核、记录和评估接口
+├── scripts/          来源计划、取数、归档、计算、审核与评估接口
 ├── references/       农业知识检查表及数据/评估协议
 ├── templates/        因子规格、人工决定与审核模板
 ├── examples/         完全合成的示例输入

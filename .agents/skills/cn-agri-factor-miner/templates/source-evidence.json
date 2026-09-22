@@ -1,0 +1,12 @@
+{
+  "query": "实际执行的搜索词",
+  "url": "https://example.org/replace-with-actual-report",
+  "title": "实际报告标题",
+  "publisher": "原始发布方",
+  "role": "primary",
+  "finding": "实际读取的事实与原文位置，勿把搜索摘要当全文",
+  "supports": "支持的经济链条环节；无证据则明确说明",
+  "contradicts": "原文中的反向证据或口径/时间局限",
+  "publication_time": null,
+  "receipt_id": "归档命令返回的真实 receipt_id"
+}

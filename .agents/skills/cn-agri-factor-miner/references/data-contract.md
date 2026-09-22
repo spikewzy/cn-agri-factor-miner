@@ -57,3 +57,7 @@ These are discovery entry points, not connected data feeds. No real observations
 | Company disclosures / licensed surveys | Supplied source-specific files, issuer/exchange primary disclosures when relevant | None supplied in this workspace. Weekly same-sample stocks, disappearance, arrival forecast vintages and crush plans remain missing. No subscription presumed. |
 
 Use supplied/licensed data when available and record actual permissions/coverage. Recheck access on each real research run; do not turn this dated access log into a claim that data are currently connected.
+
+## Acquisition first-seen records
+
+`availability_basis=first_seen` permits `published_at=null` only with `first_seen_at == available_at`, a source receipt and raw SHA-256. It represents the current capture of an unversioned series, never a guessed original release. Earlier decisions cannot see it; `verified_pit` remains false. Repeated captures retain revisions ordered by capture time. Source-specific table mapping and archived release evidence are described in [data acquisition](data-acquisition.md).

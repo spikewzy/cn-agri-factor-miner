@@ -1,0 +1,11 @@
+[
+  {
+    "id": "replace_with_query_id",
+    "provider": "choice",
+    "api": "edb",
+    "args": ["REPLACE_WITH_VERIFIED_EDB_ID"],
+    "options": "StartDate=2026-09-01,EndDate=2026-09-21,IsPublishDate=1,RECVtimeout=20",
+    "mapping_evidence": "Replace with the actual indicator catalog reference, field meaning, unit and sample. This template is not a working indicator ID.",
+    "role": "fundamental_series_requires_vintage_verification"
+  }
+]
