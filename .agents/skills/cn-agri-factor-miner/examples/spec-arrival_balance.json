@@ -1,0 +1,115 @@
+{
+  "id": "arrival_balance",
+  "version": 1,
+  "commodity_group": {
+    "id": "soybean_complex",
+    "members": [
+      "soybean_meal",
+      "soybean_oil"
+    ],
+    "linkage": "Joint outputs from imported soybean crushing; distinct demand and stocks"
+  },
+  "economic_family": "feedstock_balance",
+  "hypothesis": "Dated, locally available soybean-arrival forecasts versus stocks and planned crush may predict feedstock bottlenecks.",
+  "mechanism": "A two-week feedstock balance changes feasible crushing before joint product replenishment.",
+  "counterexample": "Vessels arrive but customs/quality clearance delays usability; processors cancel crush plans; demand falls faster than output.",
+  "evidence": [
+    {
+      "kind": "illustration",
+      "source": "synthetic-v1",
+      "excerpt": "No empirical evidence supplied. Mechanism is an unvalidated research hypothesis.",
+      "supports": "economic motivation only",
+      "contradicts": "Vessels arrive but customs/quality clearance delays usability; processors cancel crush plans; demand falls faster than output.",
+      "publication_time": null,
+      "extraction_version": "synthetic-v1",
+      "event_id": "hypothesis-arrival_balance"
+    }
+  ],
+  "expected_direction": "positive value -> constrained crushing and potentially higher meal/oil returns, separately tested",
+  "target": {
+    "return": "external 14-day real-contract return; meal only for coverage, separate meal/oil for others",
+    "physical": "Compare forecast same-window cleared arrivals with realized cleared arrivals and actual crush; this is a balance, not a surprise."
+  },
+  "horizon": 14,
+  "input_fields": {
+    "arrivals_14d": {
+      "source": "SYNTHETIC",
+      "unit": "tonne",
+      "kind": "forecast",
+      "max_release_age_days": 10,
+      "max_observation_age_days": 14,
+      "target_days": 14
+    },
+    "raw_stock": {
+      "source": "SYNTHETIC",
+      "unit": "tonne",
+      "kind": "realization",
+      "max_release_age_days": 10,
+      "max_observation_age_days": 14
+    },
+    "planned_crush_14d": {
+      "source": "SYNTHETIC",
+      "unit": "tonne",
+      "kind": "forecast",
+      "max_release_age_days": 10,
+      "max_observation_age_days": 14,
+      "target_days": 14
+    }
+  },
+  "units": {
+    "inputs": {
+      "arrivals_14d": "tonne",
+      "raw_stock": "tonne",
+      "planned_crush_14d": "tonne"
+    },
+    "output": "ratio"
+  },
+  "availability_rules": "Latest eligible source vintage; exact next-14-day forecast targets; observed publications required for verified PIT.",
+  "formula": {
+    "op": "neg",
+    "args": [
+      {
+        "op": "div",
+        "args": [
+          {
+            "op": "sub",
+            "args": [
+              {
+                "op": "add",
+                "args": [
+                  {
+                    "field": "arrivals_14d"
+                  },
+                  {
+                    "field": "raw_stock"
+                  }
+                ]
+              },
+              {
+                "field": "planned_crush_14d"
+              }
+            ]
+          },
+          {
+            "field": "planned_crush_14d"
+          }
+        ]
+      }
+    ]
+  },
+  "parameters": {
+    "forecast_target_days": 14
+  },
+  "normalization": "No fitted normalization",
+  "missing_stale_policy": "BLOCKED_DATA; no backfill; bounded forward use only after release",
+  "failure_conditions": [
+    "Vessels arrive but customs/quality clearance delays usability; processors cancel crush plans; demand falls faster than output.",
+    "Unknown vintages, unit/sample/location mismatch, overlap in inventory coverage"
+  ],
+  "closest_existing_factors": [
+    "baseline_feedstock_balance"
+  ],
+  "incremental_information": "Dated forecast versus physical processing plan",
+  "physical_test": "Compare forecast same-window cleared arrivals with realized cleared arrivals and actual crush; this is a balance, not a surprise.",
+  "price_derived": []
+}

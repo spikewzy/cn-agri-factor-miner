@@ -1,0 +1,49 @@
+{
+  "request_hash": null,
+  "status": "NOT_EVALUATED",
+  "assessment_scope": "development_only",
+  "evaluator_id": null,
+  "evaluator_version": null,
+  "evaluated_at": null,
+  "integrity_checks": {
+    "point_in_time": null,
+    "observable_labels": null,
+    "training_only_fits": null,
+    "real_contract_labels": null,
+    "overlap_handled": null
+  },
+  "diagnostics": {
+    "coverage_staleness_units_outliers_sign_crop_years": {
+      "status": "INSUFFICIENT_DATA",
+      "evidence": null
+    },
+    "per_commodity_time_series_ic_rank_ic_uncertainty": {
+      "status": "INSUFFICIENT_DATA",
+      "evidence": null
+    },
+    "crop_year_regime_parameter_stability_serial_dependence": {
+      "status": "INSUFFICIENT_DATA",
+      "evidence": null
+    },
+    "fixed_model_incremental_oos_family_ablation": {
+      "status": "INSUFFICIENT_DATA",
+      "evidence": null
+    },
+    "formula_mechanism_exposure_redundancy": {
+      "status": "INSUFFICIENT_DATA",
+      "evidence": null
+    },
+    "selection_uncertainty_all_attempts": {
+      "status": "INSUFFICIENT_DATA",
+      "evidence": null
+    },
+    "intermediate_physical_prediction_where_measurable": {
+      "status": "INSUFFICIENT_DATA",
+      "evidence": null
+    }
+  },
+  "trading_performance": null,
+  "roll_assumptions": null,
+  "cost_assumptions": null,
+  "execution_assumptions": null
+}

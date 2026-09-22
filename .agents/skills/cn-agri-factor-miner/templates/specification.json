@@ -1,0 +1,98 @@
+{
+  "id": "new_factor",
+  "version": 1,
+  "commodity_group": {
+    "id": "soybean_complex",
+    "members": [
+      "soybean_meal",
+      "soybean_oil"
+    ],
+    "linkage": "Joint outputs from imported soybean crushing; distinct demand and stocks"
+  },
+  "economic_family": "inventory_tightness",
+  "hypothesis": "Replace with a testable economic hypothesis after data discovery.",
+  "mechanism": "Fewer weeks of same-sample inventory relative to disappearance can constrain near-term deliveries.",
+  "counterexample": "Stock coverage falls because sample firms exit, feed demand collapses, or inventories move downstream; no genuine tightness.",
+  "evidence": [
+    {
+      "kind": "missing",
+      "source": null,
+      "excerpt": null,
+      "publication_time": null,
+      "extraction_version": null,
+      "event_id": null,
+      "supports": null,
+      "contradicts": null
+    }
+  ],
+  "expected_direction": "positive value -> higher meal return, conditional and unvalidated",
+  "target": {
+    "return": "external 14-day real-contract return; meal only for coverage, separate meal/oil for others",
+    "physical": "Compare next released meal stock/disappearance and delivery shortfalls; distinguish survey coverage changes."
+  },
+  "horizon": 14,
+  "input_fields": {
+    "meal_stock": {
+      "source": "SYNTHETIC",
+      "unit": "tonne",
+      "kind": "realization",
+      "max_release_age_days": 10,
+      "max_observation_age_days": 14
+    },
+    "meal_disappearance": {
+      "source": "SYNTHETIC",
+      "unit": "tonne/week",
+      "kind": "realization",
+      "max_release_age_days": 10,
+      "max_observation_age_days": 14
+    }
+  },
+  "units": {
+    "inputs": {
+      "meal_stock": "tonne",
+      "meal_disappearance": "tonne/week"
+    },
+    "output": "week"
+  },
+  "availability_rules": "Latest eligible source vintage; exact next-14-day forecast targets; observed publications required for verified PIT.",
+  "formula": {
+    "op": "neg",
+    "args": [
+      {
+        "op": "seasonal_anomaly",
+        "args": [
+          {
+            "op": "div",
+            "args": [
+              {
+                "field": "meal_stock"
+              },
+              {
+                "field": "meal_disappearance"
+              }
+            ]
+          }
+        ],
+        "anchor": "meal_stock",
+        "min_years": 2,
+        "calendar": "calendar_month"
+      }
+    ]
+  },
+  "parameters": {
+    "seasonal_calendar": "calendar_month illustrative only; China/Lunar New Year alignment requires reviewed operator",
+    "min_years": 2
+  },
+  "normalization": "Training-cutoff eligible prior calendar-month years, equal year weighting",
+  "missing_stale_policy": "BLOCKED_DATA; no backfill; bounded forward use only after release",
+  "failure_conditions": [
+    "Stock coverage falls because sample firms exit, feed demand collapses, or inventories move downstream; no genuine tightness.",
+    "Unknown vintages, unit/sample/location mismatch, overlap in inventory coverage"
+  ],
+  "closest_existing_factors": [
+    "baseline_coverage"
+  ],
+  "incremental_information": "Seasonal context",
+  "physical_test": "Compare next released meal stock/disappearance and delivery shortfalls; distinguish survey coverage changes.",
+  "price_derived": []
+}

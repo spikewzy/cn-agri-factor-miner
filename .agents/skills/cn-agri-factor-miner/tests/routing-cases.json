@@ -1,0 +1,47 @@
+[
+  {
+    "request": "为豆粕豆油挖掘可解释的基本面量化因子",
+    "expected_skill": true,
+    "reason": "Chinese agricultural futures factor research"
+  },
+  {
+    "request": "研究中国棉花期货库存和需求因子",
+    "expected_skill": true,
+    "reason": "Agricultural family configurable after metadata/data checks"
+  },
+  {
+    "request": "给铜期货开发基本面因子",
+    "expected_skill": false,
+    "reason": "Industrial metal, excluded"
+  },
+  {
+    "request": "研究原油裂解价差因子",
+    "expected_skill": false,
+    "reason": "Energy processing, not agricultural processing"
+  },
+  {
+    "request": "Analyze Bitcoin momentum factors",
+    "expected_skill": false,
+    "reason": "Crypto, excluded"
+  },
+  {
+    "request": "给农业股票做估值",
+    "expected_skill": false,
+    "reason": "Agricultural equities are not agricultural futures"
+  },
+  {
+    "request": "介绍一下大豆如何种植",
+    "expected_skill": false,
+    "reason": "Generic agronomy, no factor research"
+  },
+  {
+    "request": "为铜和豆粕一起建立跨品种因子",
+    "expected_skill": false,
+    "reason": "Mixed non-agricultural group requires rescoping; do not silently narrow"
+  },
+  {
+    "request": "帮我自动交易豆油期货",
+    "expected_skill": false,
+    "reason": "Execution is outside this research skill"
+  }
+]

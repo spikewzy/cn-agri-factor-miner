@@ -1,2 +1,126 @@
 # cn-agri-factor-miner
-All from Vibe just a test please be careful
+
+> All from Vibe just a test please be careful
+>
+> 实验性研究项目：请先验证流程和数据，示例不代表已验证的投资信号。
+
+**中国农业期货基本面因子研究技能 · Codex / WorkBuddy / 其他 Agent**
+
+把农业基本面证据整理为可解释、可复现、可检验的因子，保留数据时点、修订历史、人工审核和失败记录。首批示例为豆粕与豆油，可以配置扩展到其他中国农业期货。
+
+[中文使用说明与完整命令](.agents/skills/cn-agri-factor-miner/README.md) · [技能入口](.agents/skills/cn-agri-factor-miner/SKILL.md) · [农业研究检查表](.agents/skills/cn-agri-factor-miner/references/agriculture.md)
+
+## 选择安装方式
+
+| Agent | 安装包 / 源码 | 使用方式 |
+|---|---|---|
+| Codex | 克隆本仓库，或安装 `.agents/skills/cn-agri-factor-miner/` | `$cn-agri-factor-miner` 或自然语言 |
+| WorkBuddy | [下载 WorkBuddy 专用 ZIP](https://github.com/spikewzy/cn-agri-factor-miner/releases/download/v0.2.0/cn-agri-factor-miner-workbuddy-v0.2.0.zip) | 导入、启用后按技能名称调用 |
+| 其他支持 SKILL.md 的 agent | [下载通用 ZIP](https://github.com/spikewzy/cn-agri-factor-miner/releases/download/v0.2.0/cn-agri-factor-miner-portable-v0.2.0.zip) | 按宿主的技能导入方式安装 |
+| 只有文件和终端工具的 agent | 解压通用 ZIP | 明确要求读取 SKILL.md 的绝对路径并遵循它 |
+
+两个包共用研究规则和计算脚本。WorkBuddy 包额外提供中英文描述、版本、作者，移除 Codex 展示元数据；ZIP 根目录直接包含 `SKILL.md`。**不要用 GitHub 的整仓库源码 ZIP 代替技能导入包。**
+
+### WorkBuddy 安装教程
+
+1. 下载上表的 **WorkBuddy 专用 ZIP**，保留完整压缩包。
+2. 打开 WorkBuddy 左侧 **专家·技能·连接器 → 技能**，通过 **添加技能 → 上传技能 / 导入本地技能包** 选择 ZIP；不同版本按钮名称可能不同。导入后在已安装技能中启用它。这是本地安装，不是技能市场上架。
+3. 新建任务，选定可读写的研究工作目录，然后粘贴：
+
+```text
+请使用 cn-agri-factor-miner（中国农业基本面因子研究）。
+读取已安装技能的 SKILL.md 和 references/agent-compatibility.md。
+定位 SKILL.md 的实际目录作为 SKILL_DIR，不要猜测安装路径。
+在我的研究工作区中创建独立的 RUN_DIR，必须放在技能目录之外。
+先运行 scripts/doctor.py --run-root RUN_DIR，再运行自带的合成演示。
+保存并解释 demo-report.json。无法执行命令时返回 BLOCKED_ENVIRONMENT。
+演示中的模拟审批不代表我批准真实研究，不要宣称因子已有效或回测通过。
+```
+
+4. 环境检查应为 `READY`；演示正常计算部分应为 `NOT_EVALUATED`，因为本项目不自带外部回测器。演示还会展示缺数阻塞、未来数据拦截和修订恢复。
+5. 使用真实数据时，改为要求“检查我的数据、生成候选规格与审核材料，在计算前等待我的明确审批”。操作和命令见[完整中文教程](.agents/skills/cn-agri-factor-miner/README.md)。
+
+**运行环境：Python 3.9+、macOS / Linux。Windows 使用 WSL 内的 Python**，WorkBuddy 需要能调用 WSL；也可手动在 WSL 中执行命令并将结果交给 agent。当前文件锁依赖 `fcntl`，不支持原生 Windows Python。导入成功不等于具备执行能力。
+
+适配依据：[WorkBuddy 官方技能格式](https://open.workbuddy.cn/docs/skill)及[技能管理文档](https://www.codebuddy.ai/docs/workbuddy/From-Beginner-to-Expert-Guide/Function-Description/Skills-Market)。已验证安装包格式及搬迁目录后的脚本执行；**尚未实测 WorkBuddy 客户端界面导入**，也不保证所有 agent 自动发现技能。
+
+### Codex 安装教程
+
+克隆或下载这个仓库，然后在仓库目录中打开 Codex。
+
+```bash
+git clone https://github.com/spikewzy/cn-agri-factor-miner.git
+cd cn-agri-factor-miner
+```
+
+技能位于 `.agents/skills/cn-agri-factor-miner/`。请保留完整目录，不能只复制 `SKILL.md`。
+
+在 Codex 中输入：
+
+```text
+使用 $cn-agri-factor-miner，先检查项目中的数据、已有因子和人工修正记录。
+研究豆粕和豆油的基本面因子，每周决策，主要预测未来两周。
+先生成候选规格和审核材料，等待我审核后再计算。
+```
+
+也可把完整技能目录复制到其他项目的 `.agents/skills/` 下，或在 Codex 中输入：
+
+```text
+使用 $skill-installer，从 https://github.com/spikewzy/cn-agri-factor-miner 安装
+.agents/skills/cn-agri-factor-miner 目录中的技能。
+```
+
+技能扫描与安装规则见 [OpenAI 官方文档](https://learn.chatgpt.com/docs/build-skills)。GitHub 是源码分发入口；计算在使用者自己的环境执行，并非托管在线 API。
+
+## 快速验证
+
+Python 3.9+，macOS / Linux，Python 标准库即可。Windows 可使用 WSL。
+
+```bash
+python3 .agents/skills/cn-agri-factor-miner/scripts/doctor.py --run-root runs/my-first-run
+python3 -m unittest discover -s .agents/skills/cn-agri-factor-miner/tests -v
+python3 -m unittest discover -s tests -v
+python3 .agents/skills/cn-agri-factor-miner/scripts/demo.py --output runs/my-first-demo
+```
+
+结果见 `runs/my-first-demo/demo-report.json`。再次运行时换一个输出目录，旧记录不会被覆盖。
+
+当前有 38 项核心测试和 4 项打包/迁移测试通过、353 条明确标记的合成记录、3 个未经验证的示例假设。演示覆盖正常计算、缺数阻塞、未来数据泄漏拦截、人工审核暂停及修订恢复。
+
+若使用解压后的安装包，请将命令中的 `.agents/skills/cn-agri-factor-miner` 换成解压目录的绝对路径，并给输出目录指定技能目录之外的位置。仓库级 `tests/` 是打包测试，仅在源码仓库中运行。
+
+从源码重新生成两个 ZIP 及 SHA-256 清单：
+
+```bash
+python3 tools/package_skill.py --target all --output dist
+```
+
+发布包和校验清单见 [v0.2.0 Release](https://github.com/spikewzy/cn-agri-factor-miner/releases/tag/v0.2.0)。打包测试会把两种 ZIP 分别解压到含中文和空格的新路径，检查全部核心测试、演示及审批暂停。
+
+## 工作流和边界
+
+**证据 → 经济假设 → 冻结规格 → 确定性计算 → 外部评估 → 人工审核 → 研究记录**
+
+- 一批最多 6 个假设、3 个入选假设、每个最多 3 个规格版本；拒绝和失败也保留。
+- 所有因子通过 as-of 接口读取数据；未知历史发布时间不能声称已验证时点安全。
+- 人工批准绑定规格版本和哈希，实质修改后重新审核。
+- 无外部评估器时返回 `NOT_EVALUATED`，不会编造 IC、收益率或夏普比率。
+- 研究库接纳仅供进一步研究和前瞻影子验证，不授权实盘交易。
+
+技能不覆盖非农业期货、股票估值或自动交易，也不内置回测引擎。三个示例仅展示流程，尚无预测能力或收益证据。真实数据、历史发布版本、经核验的合约日历及外部真实合约评估需使用者自行接入。
+
+## 目录
+
+```text
+.agents/skills/cn-agri-factor-miner/
+├── SKILL.md          技能触发条件与工作流
+├── README.md         中英文操作说明
+├── agents/           Codex 展示元数据
+├── scripts/          计算、时点访问、审核、记录和评估接口
+├── references/       农业知识检查表及数据/评估协议
+├── templates/        因子规格、人工决定与审核模板
+├── examples/         完全合成的示例输入
+└── tests/            测试与路由场景
+```
+
+本仓库发布技能代码、文档、模板和合成样例。运行产生的研究记录放在 `runs/`，已通过 `.gitignore` 排除。

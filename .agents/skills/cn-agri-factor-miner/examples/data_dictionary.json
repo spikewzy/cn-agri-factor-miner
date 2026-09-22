@@ -1,0 +1,60 @@
+{
+  "meal_stock": {
+    "source": "SYNTHETIC",
+    "unit": "tonne",
+    "kind": "realization",
+    "max_release_age_days": 10,
+    "max_observation_age_days": 14
+  },
+  "meal_disappearance": {
+    "source": "SYNTHETIC",
+    "unit": "tonne/week",
+    "kind": "realization",
+    "max_release_age_days": 10,
+    "max_observation_age_days": 14
+  },
+  "oil_stock": {
+    "source": "SYNTHETIC",
+    "unit": "tonne",
+    "kind": "realization",
+    "max_release_age_days": 10,
+    "max_observation_age_days": 14
+  },
+  "oil_disappearance": {
+    "source": "SYNTHETIC",
+    "unit": "tonne/week",
+    "kind": "realization",
+    "max_release_age_days": 10,
+    "max_observation_age_days": 14
+  },
+  "raw_stock": {
+    "source": "SYNTHETIC",
+    "unit": "tonne",
+    "kind": "realization",
+    "max_release_age_days": 10,
+    "max_observation_age_days": 14
+  },
+  "arrivals_14d": {
+    "source": "SYNTHETIC",
+    "unit": "tonne",
+    "kind": "forecast",
+    "max_release_age_days": 10,
+    "max_observation_age_days": 14,
+    "target_days": 14
+  },
+  "planned_crush_14d": {
+    "source": "SYNTHETIC",
+    "unit": "tonne",
+    "kind": "forecast",
+    "max_release_age_days": 10,
+    "max_observation_age_days": 14,
+    "target_days": 14
+  },
+  "crush_margin": {
+    "source": "SYNTHETIC",
+    "unit": "CNY/tonne_feedstock",
+    "kind": "realization",
+    "max_release_age_days": 10,
+    "max_observation_age_days": 14
+  }
+}

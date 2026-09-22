@@ -1,0 +1,451 @@
+[
+  {
+    "id": "inventory_coverage",
+    "version": 1,
+    "commodity_group": {
+      "id": "soybean_complex",
+      "members": [
+        "soybean_meal",
+        "soybean_oil"
+      ],
+      "linkage": "Joint outputs from imported soybean crushing; distinct demand and stocks"
+    },
+    "economic_family": "inventory_tightness",
+    "hypothesis": "Seasonally unusual meal inventory coverage may precede meal supply tightness.",
+    "mechanism": "Fewer weeks of same-sample inventory relative to disappearance can constrain near-term deliveries.",
+    "counterexample": "Stock coverage falls because sample firms exit, feed demand collapses, or inventories move downstream; no genuine tightness.",
+    "evidence": [
+      {
+        "kind": "illustration",
+        "source": "synthetic-v1",
+        "excerpt": "No empirical evidence supplied. Mechanism is an unvalidated research hypothesis.",
+        "supports": "economic motivation only",
+        "contradicts": "Stock coverage falls because sample firms exit, feed demand collapses, or inventories move downstream; no genuine tightness.",
+        "publication_time": null,
+        "extraction_version": "synthetic-v1",
+        "event_id": "hypothesis-inventory_coverage"
+      }
+    ],
+    "expected_direction": "positive value -> higher meal return, conditional and unvalidated",
+    "target": {
+      "return": "external 14-day real-contract return; meal only for coverage, separate meal/oil for others",
+      "physical": "Compare next released meal stock/disappearance and delivery shortfalls; distinguish survey coverage changes."
+    },
+    "horizon": 14,
+    "input_fields": {
+      "meal_stock": {
+        "source": "SYNTHETIC",
+        "unit": "tonne",
+        "kind": "realization",
+        "max_release_age_days": 10,
+        "max_observation_age_days": 14
+      },
+      "meal_disappearance": {
+        "source": "SYNTHETIC",
+        "unit": "tonne/week",
+        "kind": "realization",
+        "max_release_age_days": 10,
+        "max_observation_age_days": 14
+      }
+    },
+    "units": {
+      "inputs": {
+        "meal_stock": "tonne",
+        "meal_disappearance": "tonne/week"
+      },
+      "output": "week"
+    },
+    "availability_rules": "Latest eligible source vintage; exact next-14-day forecast targets; observed publications required for verified PIT.",
+    "formula": {
+      "op": "neg",
+      "args": [
+        {
+          "op": "seasonal_anomaly",
+          "args": [
+            {
+              "op": "div",
+              "args": [
+                {
+                  "field": "meal_stock"
+                },
+                {
+                  "field": "meal_disappearance"
+                }
+              ]
+            }
+          ],
+          "anchor": "meal_stock",
+          "min_years": 2,
+          "calendar": "calendar_month"
+        }
+      ]
+    },
+    "parameters": {
+      "seasonal_calendar": "calendar_month illustrative only; China/Lunar New Year alignment requires reviewed operator",
+      "min_years": 2
+    },
+    "normalization": "Training-cutoff eligible prior calendar-month years, equal year weighting",
+    "missing_stale_policy": "BLOCKED_DATA; no backfill; bounded forward use only after release",
+    "failure_conditions": [
+      "Stock coverage falls because sample firms exit, feed demand collapses, or inventories move downstream; no genuine tightness.",
+      "Unknown vintages, unit/sample/location mismatch, overlap in inventory coverage"
+    ],
+    "closest_existing_factors": [
+      "baseline_coverage"
+    ],
+    "incremental_information": "Seasonal context",
+    "physical_test": "Compare next released meal stock/disappearance and delivery shortfalls; distinguish survey coverage changes.",
+    "price_derived": []
+  },
+  {
+    "id": "arrival_balance",
+    "version": 1,
+    "commodity_group": {
+      "id": "soybean_complex",
+      "members": [
+        "soybean_meal",
+        "soybean_oil"
+      ],
+      "linkage": "Joint outputs from imported soybean crushing; distinct demand and stocks"
+    },
+    "economic_family": "feedstock_balance",
+    "hypothesis": "Dated, locally available soybean-arrival forecasts versus stocks and planned crush may predict feedstock bottlenecks.",
+    "mechanism": "A two-week feedstock balance changes feasible crushing before joint product replenishment.",
+    "counterexample": "Vessels arrive but customs/quality clearance delays usability; processors cancel crush plans; demand falls faster than output.",
+    "evidence": [
+      {
+        "kind": "illustration",
+        "source": "synthetic-v1",
+        "excerpt": "No empirical evidence supplied. Mechanism is an unvalidated research hypothesis.",
+        "supports": "economic motivation only",
+        "contradicts": "Vessels arrive but customs/quality clearance delays usability; processors cancel crush plans; demand falls faster than output.",
+        "publication_time": null,
+        "extraction_version": "synthetic-v1",
+        "event_id": "hypothesis-arrival_balance"
+      }
+    ],
+    "expected_direction": "positive value -> constrained crushing and potentially higher meal/oil returns, separately tested",
+    "target": {
+      "return": "external 14-day real-contract return; meal only for coverage, separate meal/oil for others",
+      "physical": "Compare forecast same-window cleared arrivals with realized cleared arrivals and actual crush; this is a balance, not a surprise."
+    },
+    "horizon": 14,
+    "input_fields": {
+      "arrivals_14d": {
+        "source": "SYNTHETIC",
+        "unit": "tonne",
+        "kind": "forecast",
+        "max_release_age_days": 10,
+        "max_observation_age_days": 14,
+        "target_days": 14
+      },
+      "raw_stock": {
+        "source": "SYNTHETIC",
+        "unit": "tonne",
+        "kind": "realization",
+        "max_release_age_days": 10,
+        "max_observation_age_days": 14
+      },
+      "planned_crush_14d": {
+        "source": "SYNTHETIC",
+        "unit": "tonne",
+        "kind": "forecast",
+        "max_release_age_days": 10,
+        "max_observation_age_days": 14,
+        "target_days": 14
+      }
+    },
+    "units": {
+      "inputs": {
+        "arrivals_14d": "tonne",
+        "raw_stock": "tonne",
+        "planned_crush_14d": "tonne"
+      },
+      "output": "ratio"
+    },
+    "availability_rules": "Latest eligible source vintage; exact next-14-day forecast targets; observed publications required for verified PIT.",
+    "formula": {
+      "op": "neg",
+      "args": [
+        {
+          "op": "div",
+          "args": [
+            {
+              "op": "sub",
+              "args": [
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "field": "arrivals_14d"
+                    },
+                    {
+                      "field": "raw_stock"
+                    }
+                  ]
+                },
+                {
+                  "field": "planned_crush_14d"
+                }
+              ]
+            },
+            {
+              "field": "planned_crush_14d"
+            }
+          ]
+        }
+      ]
+    },
+    "parameters": {
+      "forecast_target_days": 14
+    },
+    "normalization": "No fitted normalization",
+    "missing_stale_policy": "BLOCKED_DATA; no backfill; bounded forward use only after release",
+    "failure_conditions": [
+      "Vessels arrive but customs/quality clearance delays usability; processors cancel crush plans; demand falls faster than output.",
+      "Unknown vintages, unit/sample/location mismatch, overlap in inventory coverage"
+    ],
+    "closest_existing_factors": [
+      "baseline_feedstock_balance"
+    ],
+    "incremental_information": "Dated forecast versus physical processing plan",
+    "physical_test": "Compare forecast same-window cleared arrivals with realized cleared arrivals and actual crush; this is a balance, not a surprise.",
+    "price_derived": []
+  },
+  {
+    "id": "crush_constraints",
+    "version": 1,
+    "commodity_group": {
+      "id": "soybean_complex",
+      "members": [
+        "soybean_meal",
+        "soybean_oil"
+      ],
+      "linkage": "Joint outputs from imported soybean crushing; distinct demand and stocks"
+    },
+    "economic_family": "processing_supply_response",
+    "hypothesis": "Improving crush margins may increase output only when feedstock and both product storage/demand conditions allow it.",
+    "mechanism": "A margin-change signal is gated by raw availability and the tighter of distinct meal/oil inventory constraints.",
+    "counterexample": "Margins reflect a meal/oil demand shock or unhedgeable quotes; maintenance, logistics or absent buyers prevent more crush.",
+    "evidence": [
+      {
+        "kind": "illustration",
+        "source": "synthetic-v1",
+        "excerpt": "No empirical evidence supplied. Mechanism is an unvalidated research hypothesis.",
+        "supports": "economic motivation only",
+        "contradicts": "Margins reflect a meal/oil demand shock or unhedgeable quotes; maintenance, logistics or absent buyers prevent more crush.",
+        "publication_time": null,
+        "extraction_version": "synthetic-v1",
+        "event_id": "hypothesis-crush_constraints"
+      }
+    ],
+    "expected_direction": "positive value -> weaker near-term output response and potentially higher returns; verify separately for meal/oil",
+    "target": {
+      "return": "external 14-day real-contract return; meal only for coverage, separate meal/oil for others",
+      "physical": "Test subsequent actual crush and separate meal/oil stocks, conditioning on maintenance and contemporaneous demand."
+    },
+    "horizon": 14,
+    "input_fields": {
+      "crush_margin": {
+        "source": "SYNTHETIC",
+        "unit": "CNY/tonne_feedstock",
+        "kind": "realization",
+        "max_release_age_days": 10,
+        "max_observation_age_days": 14
+      },
+      "raw_stock": {
+        "source": "SYNTHETIC",
+        "unit": "tonne",
+        "kind": "realization",
+        "max_release_age_days": 10,
+        "max_observation_age_days": 14
+      },
+      "planned_crush_14d": {
+        "source": "SYNTHETIC",
+        "unit": "tonne",
+        "kind": "forecast",
+        "max_release_age_days": 10,
+        "max_observation_age_days": 14,
+        "target_days": 14
+      },
+      "meal_stock": {
+        "source": "SYNTHETIC",
+        "unit": "tonne",
+        "kind": "realization",
+        "max_release_age_days": 10,
+        "max_observation_age_days": 14
+      },
+      "meal_disappearance": {
+        "source": "SYNTHETIC",
+        "unit": "tonne/week",
+        "kind": "realization",
+        "max_release_age_days": 10,
+        "max_observation_age_days": 14
+      },
+      "oil_stock": {
+        "source": "SYNTHETIC",
+        "unit": "tonne",
+        "kind": "realization",
+        "max_release_age_days": 10,
+        "max_observation_age_days": 14
+      },
+      "oil_disappearance": {
+        "source": "SYNTHETIC",
+        "unit": "tonne/week",
+        "kind": "realization",
+        "max_release_age_days": 10,
+        "max_observation_age_days": 14
+      }
+    },
+    "units": {
+      "inputs": {
+        "crush_margin": "CNY/tonne_feedstock",
+        "raw_stock": "tonne",
+        "planned_crush_14d": "tonne",
+        "meal_stock": "tonne",
+        "meal_disappearance": "tonne/week",
+        "oil_stock": "tonne",
+        "oil_disappearance": "tonne/week"
+      },
+      "output": "CNY/tonne_feedstock"
+    },
+    "availability_rules": "Latest eligible source vintage; exact next-14-day forecast targets; observed publications required for verified PIT.",
+    "formula": {
+      "op": "neg",
+      "args": [
+        {
+          "op": "mul",
+          "args": [
+            {
+              "op": "change",
+              "args": [
+                {
+                  "field": "crush_margin"
+                }
+              ],
+              "days": 7
+            },
+            {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "min",
+                  "args": [
+                    {
+                      "const": 1
+                    },
+                    {
+                      "op": "div",
+                      "args": [
+                        {
+                          "field": "raw_stock"
+                        },
+                        {
+                          "field": "planned_crush_14d"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "min",
+                  "args": [
+                    {
+                      "op": "div",
+                      "args": [
+                        {
+                          "const": 1
+                        },
+                        {
+                          "op": "add",
+                          "args": [
+                            {
+                              "const": 1
+                            },
+                            {
+                              "op": "div",
+                              "args": [
+                                {
+                                  "op": "div",
+                                  "args": [
+                                    {
+                                      "field": "meal_stock"
+                                    },
+                                    {
+                                      "field": "meal_disappearance"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "const": 4
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "op": "div",
+                      "args": [
+                        {
+                          "const": 1
+                        },
+                        {
+                          "op": "add",
+                          "args": [
+                            {
+                              "const": 1
+                            },
+                            {
+                              "op": "div",
+                              "args": [
+                                {
+                                  "op": "div",
+                                  "args": [
+                                    {
+                                      "field": "oil_stock"
+                                    },
+                                    {
+                                      "field": "oil_disappearance"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "const": 6
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "parameters": {
+      "change_days": 7,
+      "meal_coverage_scale_weeks": 4,
+      "oil_coverage_scale_weeks": 6
+    },
+    "normalization": "No fitted normalization",
+    "missing_stale_policy": "BLOCKED_DATA; no backfill; bounded forward use only after release",
+    "failure_conditions": [
+      "Margins reflect a meal/oil demand shock or unhedgeable quotes; maintenance, logistics or absent buyers prevent more crush.",
+      "Unknown vintages, unit/sample/location mismatch, overlap in inventory coverage"
+    ],
+    "closest_existing_factors": [
+      "baseline_margin_change"
+    ],
+    "incremental_information": "Availability and separate joint-output constraints",
+    "physical_test": "Test subsequent actual crush and separate meal/oil stocks, conditioning on maintenance and contemporaneous demand.",
+    "price_derived": [
+      "crush_margin"
+    ]
+  }
+]

@@ -1,0 +1,51 @@
+[
+  {
+    "id": "baseline_coverage",
+    "status": "documented_reproducible_unvalidated",
+    "formula": {
+      "op": "div",
+      "args": [
+        {
+          "field": "meal_stock"
+        },
+        {
+          "field": "meal_disappearance"
+        }
+      ]
+    },
+    "mechanism": "Inventory/disappearance state",
+    "family": "inventory_tightness"
+  },
+  {
+    "id": "baseline_feedstock_balance",
+    "status": "documented_reproducible_unvalidated",
+    "formula": {
+      "op": "sub",
+      "args": [
+        {
+          "field": "raw_stock"
+        },
+        {
+          "field": "planned_crush_14d"
+        }
+      ]
+    },
+    "mechanism": "Stock minus planned use",
+    "family": "feedstock_balance"
+  },
+  {
+    "id": "baseline_margin_change",
+    "status": "documented_reproducible_unvalidated",
+    "formula": {
+      "op": "change",
+      "args": [
+        {
+          "field": "crush_margin"
+        }
+      ],
+      "days": 7
+    },
+    "mechanism": "Processing incentive",
+    "family": "processing_supply_response"
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "scope": {
+    "commodity_group": null,
+    "fields": [],
+    "applicable_versions": []
+  },
+  "rationale": null,
+  "evidence": [],
+  "reviewer": null,
+  "timestamp": null,
+  "version": 1,
+  "observed_failure": null,
+  "conjectured_explanation": null
+}

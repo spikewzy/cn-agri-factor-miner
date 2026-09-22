@@ -1,0 +1,15 @@
+# Local research artifacts and publication bundles
+/runs/
+/dist/
+
+# Python and OS generated files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.DS_Store
+
+# Local credentials
+.env
+.env.*
+!.env.example
