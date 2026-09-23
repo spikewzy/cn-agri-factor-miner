@@ -15,13 +15,13 @@
 ```text
 使用 cn-agri-factor-miner 研究豆粕和豆油，周频决策、预测未来两周。
 先检查项目里的数据、已有因子和修正记录，然后主动搜索官方及行业资料，
-调用已连接的 Tushare 或现有 Choice 获取可用数据。
+优先调用我已有的 API / MCP，再使用其他已配置接口获取可用数据。
 保留来源、原始快照、抓取时间、发布时间与修订版本，列出实际缺口。
 根据证据提出至多 6 个假设、筛选至多 3 个，给出机制、反证和候选规格。
 在我明确批准前不要计算因子。
 ```
 
-v0.3.0 加入了实际取数代码：Tushare 仓单与合约接口、Choice `csd/ctr/edb/edbquery`、公开 HTTPS 文件以及 CSV/JSON 标准化。内置 17 个农业品种的来源计划，agent 会接着执行公开资料搜索和缺口补充。没有某个付费接口权限时，继续找其他可访问来源。
+v0.3.0 加入的实际取数代码包括：Tushare 仓单与合约接口、Choice `csd/ctr/edb/edbquery`、公开 HTTPS 文件以及 CSV/JSON 标准化。内置 17 个农业品种的来源计划，agent 会接着执行公开资料搜索和缺口补充。没有某个付费接口权限时，继续找其他可访问来源。
 
 **分工**：Python 负责接口访问、原始记录、标准化和时点校验；宿主 agent 负责联网搜索、读取报告、核实 Choice 指标与单位、提出经济假设。仅运行终端脚本不会自动调用一个 LLM。
 
@@ -37,13 +37,39 @@ python3 .agents/skills/cn-agri-factor-miner/scripts/acquire.py \
 
 首次下载的旧数据没有历史版本证据时，只能从本次取得时刻起使用，不能按观察日期回填。仓单保留原单位和仓库明细，不能当作全市场库存。演示数据与真实下载数据分别保存。
 
+## 优先使用你自己的 API / MCP
+
+v0.4.0 增加可编辑的 `data-sources.json`，Codex、WorkBuddy 和其他兼容 agent 使用同一套配置：
+
+**用户按顺序配置的 API / 已连接 MCP → 已有内置接口 → agent 主动搜索并试取其他基础日线接口。** 日线、仓单、合约和基本面按各自需求选择来源，有日线不代表有库存等基本面数据。
+
+不需要在聊天里发 Key。配置里只写 API 地址、Key 的环境变量名、真实 MCP 工具和参数映射。没有自己的源时，也不要求先购买某个数据服务。
+
+在终端生成模板（路径改为实际技能和研究目录）：
+
+```bash
+python3 "$SKILL_DIR/scripts/source_router.py" --work "$RUN_DIR/acquisition" init
+```
+
+编辑生成的 `data-sources.json`，启用并排列自己的来源。也可以直接对 agent 说：
+
+```text
+使用 cn-agri-factor-miner。先检查我已连接的 MCP 和项目的数据源配置，
+把真实可用的工具、接口及字段映射写入研究目录的 data-sources.json。
+优先调用我的来源，Key 只引用本机环境变量，缺失时再尝试已有接口。
+若仍没有基础日线数据，请继续搜索其他可用接口、真实试取并验证后接入。
+分别说明日线行情和基本面数据的实际覆盖、口径及缺口。
+```
+
+[完整中文配置教程：API Key、MCP 接力、日线回退、基本面接口](.agents/skills/cn-agri-factor-miner/references/data-sources.md)。MCP 由宿主 agent 实际调用，脚本负责请求绑定、归档和验证；不能仅凭填写工具名就自动获得权限。模板默认关闭，按自己的真实服务商文档填写后再启用。
+
 ## 选择安装方式
 
 | Agent | 安装包 / 源码 | 使用方式 |
 |---|---|---|
 | Codex | 克隆本仓库，或安装 `.agents/skills/cn-agri-factor-miner/` | `$cn-agri-factor-miner` 或自然语言 |
-| WorkBuddy | [下载 WorkBuddy 专用 ZIP](https://github.com/spikewzy/cn-agri-factor-miner/releases/download/v0.3.0/cn-agri-factor-miner-workbuddy-v0.3.0.zip) | 导入、启用后按技能名称调用 |
-| 其他支持 SKILL.md 的 agent | [下载通用 ZIP](https://github.com/spikewzy/cn-agri-factor-miner/releases/download/v0.3.0/cn-agri-factor-miner-portable-v0.3.0.zip) | 按宿主的技能导入方式安装 |
+| WorkBuddy | [下载 WorkBuddy 专用 ZIP](https://github.com/spikewzy/cn-agri-factor-miner/releases/download/v0.4.0/cn-agri-factor-miner-workbuddy-v0.4.0.zip) | 导入、启用后按技能名称调用 |
+| 其他支持 SKILL.md 的 agent | [下载通用 ZIP](https://github.com/spikewzy/cn-agri-factor-miner/releases/download/v0.4.0/cn-agri-factor-miner-portable-v0.4.0.zip) | 按宿主的技能导入方式安装 |
 | 只有文件和终端工具的 agent | 解压通用 ZIP | 明确要求读取 SKILL.md 的绝对路径并遵循它 |
 
 两个包共用研究规则和计算脚本。WorkBuddy 包额外提供中英文描述、版本、作者，移除 Codex 展示元数据；ZIP 根目录直接包含 `SKILL.md`。**不要用 GitHub 的整仓库源码 ZIP 代替技能导入包。**
@@ -112,7 +138,7 @@ python3 .agents/skills/cn-agri-factor-miner/scripts/demo.py --output runs/my-fir
 
 结果见 `runs/my-first-demo/demo-report.json`。再次运行时换一个输出目录，旧记录不会被覆盖。
 
-当前有 61 项核心与取数测试和 4 项打包/迁移测试通过、353 条明确标记的合成记录、3 个未经验证的示例假设。演示覆盖正常计算、缺数阻塞、未来数据泄漏拦截、人工审核暂停及修订恢复。
+当前有 80 项核心与取数测试和 4 项打包/迁移测试通过、353 条明确标记的合成记录、3 个未经验证的示例假设。演示覆盖正常计算、缺数阻塞、未来数据泄漏拦截、人工审核暂停及修订恢复。
 
 若使用解压后的安装包，请将命令中的 `.agents/skills/cn-agri-factor-miner` 换成解压目录的绝对路径，并给输出目录指定技能目录之外的位置。仓库级 `tests/` 是打包测试，仅在源码仓库中运行。
 
@@ -122,7 +148,7 @@ python3 .agents/skills/cn-agri-factor-miner/scripts/demo.py --output runs/my-fir
 python3 tools/package_skill.py --target all --output dist
 ```
 
-发布包和校验清单见 [v0.3.0 Release](https://github.com/spikewzy/cn-agri-factor-miner/releases/tag/v0.3.0)。打包测试会把两种 ZIP 分别解压到含中文和空格的新路径，检查全部核心测试、演示及审批暂停。
+发布包和校验清单见 [v0.4.0 Release](https://github.com/spikewzy/cn-agri-factor-miner/releases/tag/v0.4.0)。打包测试会把两种 ZIP 分别解压到含中文和空格的新路径，检查全部核心测试、演示及审批暂停。
 
 ## 工作流和边界
 

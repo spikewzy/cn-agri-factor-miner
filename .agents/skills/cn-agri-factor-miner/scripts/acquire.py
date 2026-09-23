@@ -80,13 +80,24 @@ def capture(root, url, title='', role='context'):
     return archive(root, task, data, meta['content_type'], metadata=meta)
 
 
-def fetch(root, plan, extra_tasks=None, refresh=False):
-    tasks = plan['tasks'] + (extra_tasks or [])
+def fetch(root, plan, extra_tasks=None, refresh=False, sources_path=None):
+    tasks = (extra_tasks or []) + plan['tasks']
     if len(tasks)>40: raise ValueError('At most 40 API queries per acquisition plan; narrow scope')
     safe_config(tasks)
+    from source_router import config, request_need, route
+    settings = config(root, sources_path)
     prior = {r['request_hash']:r for r in receipts(root)}
     outcomes = []
     for task in tasks:
+        capability = task.get('capability') or {'fut_wsr': 'warehouse', 'fut_basic': 'contracts', 'fut_daily': 'daily'}.get(task.get('api'))
+        configured = capability and task.get('commodity') and (not settings.get('allow_builtin', True) or any(
+            s.get('enabled', True) and s['capability'] == capability and (not s.get('commodities') or task['commodity'] in s['commodities'])
+            for s in settings['sources']))
+        if configured:
+            need = request_need(task['commodity'], capability, plan['start'], plan['end'], task.get('params', {}).get('ts_code', ''))
+            routed = route(root, need, settings, task, refresh=refresh)
+            outcomes.append(dict(routed, task=task['id']))
+            continue
         key = digest(task)
         if key in prior and not refresh:
             outcomes.append({'task':task['id'], 'status':'CACHED', 'receipt_id':prior[key]['id']}); continue
@@ -340,7 +351,12 @@ def brief(root, plan):
         support=coverage.get((n['commodity'],n['field']),[])
         acquired=n['field'] in fields and fields[n['field']]['commodity']==n['commodity']
         gaps.append(dict(n,status='ACQUIRED' if acquired else 'EVIDENCE_ONLY' if support else 'NOT_ACQUIRED',qualifications=support))
-    report={'created_at':now(),'commodities':plan['commodities'],'sources':len(sources),'evidence':ev,'fields':fields,
+    source_routes = [read_json(p) for p in sorted((root/'routing').glob('*.json'))]
+    market = []
+    for path in sorted((root/'market').glob('*.json')):
+        daily_data = read_json(path)
+        market.append({'path':str(path),'receipt_id':daily_data['receipt_id'],'rows':len(daily_data['bars'])})
+    report={'source_routes':source_routes,'market_daily':market,'market_needs':plan.get('market_needs',[]),'created_at':now(),'commodities':plan['commodities'],'sources':len(sources),'evidence':ev,'fields':fields,
             'fundamental_gaps':gaps,'search_attempts':search_attempts,'pending_searches':[q for q in plan['searches'] if q['query'] not in searched and q['id'] not in searched_ids],
             'candidate_instruction':'Propose at most six evidence-linked hypotheses after source review. Preserve missing fields, contrary evidence and nearest factors. Registered receipts are not social/port inventory. Pause before factor computation.',
             'status':'READY_FOR_HYPOTHESES' if data or ev else 'BLOCKED_DATA',
@@ -383,26 +399,26 @@ def export(root, destination, manifest_path, catalog_path, corrections_path):
     return {'status':'EXPORTED_FOR_REVIEW','inputs':str(destination),'records':len(records),'note':'Set field freshness to source cadence before init; first-seen records remain ineligible before capture.'}
 
 
-def start(root, commodities, first, last, extra_tasks=None, refresh=False):
+def start(root, commodities, first, last, extra_tasks=None, refresh=False, sources_path=None):
     plan=make_plan(commodities,first,last)
     path=root/'plan.json'
     if path.exists():
         if read_json(path)!=plan: raise ValueError('Existing acquisition has a different plan; use a new work directory')
     else: write_once(path,plan)
-    attempt=fetch(root,plan,extra_tasks,refresh)
+    attempt=fetch(root,plan,extra_tasks,refresh,sources_path)
     done={read_json(p)['receipt_id'] for p in (root/'normalized').glob('*.json')}
     normalizations=[]
     for r in receipts(root):
-        if r['task'].get('api')=='fut_wsr' and r['id'] not in done:
+        if r['task'].get('api')=='fut_wsr' and r['media_type']=='application/json' and r['id'] not in done:
             normalizations.append(normalize(root,r['id']))
-        elif r['task'].get('mapping') and r['id'] not in done:
+        elif r['task'].get('mapping') and r['media_type']=='application/json' and r['id'] not in done:
             normalizations.append(normalize(root,r['id'],r['task']['mapping']))
     return {'attempt':attempt,'normalizations':normalizations,'brief':brief(root,plan),
-            'next':'Host agent must now execute source searches, inspect evidence and propose hypotheses; this CLI does not replace the host LLM.'}
+            'next':'Host agent must resolve pending MCP handoffs, fetch daily context via source_router.py daily after contract verification, execute source searches, inspect evidence and propose hypotheses; this CLI does not replace the host LLM.'}
 
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--work',required=True)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--work',required=True);p.add_argument('--sources')
     sub=p.add_subparsers(dest='command',required=True)
     q=sub.add_parser('plan');q.add_argument('--commodity',nargs='+',required=True);q.add_argument('--start',required=True);q.add_argument('--end',required=True)
     q=sub.add_parser('start');q.add_argument('--commodity',nargs='+',required=True);q.add_argument('--start',required=True);q.add_argument('--end',required=True);q.add_argument('--extra-tasks');q.add_argument('--refresh',action='store_true')
@@ -420,8 +436,8 @@ def main():
         root=workspace(args.work)
         if args.command=='plan':
             result=make_plan(args.commodity,args.start,args.end);write_once(root/'plan.json',result)
-        elif args.command=='start': result=start(root,args.commodity,args.start,args.end,read_json(args.extra_tasks) if args.extra_tasks else None,args.refresh)
-        elif args.command=='fetch': result=fetch(root,read_json(root/'plan.json'),read_json(args.extra_tasks) if args.extra_tasks else None,args.refresh)
+        elif args.command=='start': result=start(root,args.commodity,args.start,args.end,read_json(args.extra_tasks) if args.extra_tasks else None,args.refresh,args.sources)
+        elif args.command=='fetch': result=fetch(root,read_json(root/'plan.json'),read_json(args.extra_tasks) if args.extra_tasks else None,args.refresh,args.sources)
         elif args.command=='capture': result=capture(root,args.url,args.title,args.role)
         elif args.command=='import-table':
             result=archive(root,read_json(args.task),Path(args.file).read_bytes(),'application/json' if args.format=='json' else 'text/csv',metadata={'transport':'host_connector_or_local_file','availability':'first_seen_at_import_unless_documented_archive'})

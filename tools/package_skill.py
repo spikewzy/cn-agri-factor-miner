@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 import zipfile
 
-VERSION = '0.3.0'
+VERSION = '0.4.0'
 NAME = 'cn-agri-factor-miner'
 REPO = Path(__file__).resolve().parents[1]
 SOURCE = REPO / '.agents/skills' / NAME

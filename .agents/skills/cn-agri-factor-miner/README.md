@@ -1,21 +1,21 @@
 # cn-agri-factor-miner
 
-## 跨 Agent 安装：Codex、WorkBuddy 与其他工具（v0.3.0）
+## 跨 Agent 安装：Codex、WorkBuddy 与其他工具（v0.4.0）
 
 本技能不依赖 Codex 专有 API。Python 计算与审核规则共用一份代码，不同宿主仅使用不同的安装包与调用方式。
 
 | 使用场景 | 获取方式 | 调用方式 | 验证范围 |
 |---|---|---|---|
 | Codex | 克隆仓库或用 skill-installer 安装 `.agents/skills/cn-agri-factor-miner` | `$cn-agri-factor-miner` 或自然语言 | 本地 CLI、审核暂停和完整测试已验证 |
-| WorkBuddy | 下载 Releases 中的 `cn-agri-factor-miner-workbuddy-v0.3.0.zip` | 导入并启用后，用技能名自然语言调用 | 按官方格式适配，打包后的脚本已测试；未实测客户端 UI |
-| 其他支持 SKILL.md 的 agent | 下载 `cn-agri-factor-miner-portable-v0.3.0.zip`，按该 agent 的导入入口安装 | 产品的技能选择器或自然语言 | 移动目录后的执行已验证；不保证所有宿主自动识别 |
+| WorkBuddy | 下载 Releases 中的 `cn-agri-factor-miner-workbuddy-v0.4.0.zip` | 导入并启用后，用技能名自然语言调用 | 按官方格式适配，打包后的脚本已测试；未实测客户端 UI |
+| 其他支持 SKILL.md 的 agent | 下载 `cn-agri-factor-miner-portable-v0.4.0.zip`，按该 agent 的导入入口安装 | 产品的技能选择器或自然语言 | 移动目录后的执行已验证；不保证所有宿主自动识别 |
 | 无技能管理但有文件/终端工具的 agent | 解压通用包，将 SKILL.md 的绝对路径交给 agent | 明确要求读取该文件并执行 | 手动加载模式；计算仍需本地 Python |
 
-下载入口：[GitHub Releases](https://github.com/spikewzy/cn-agri-factor-miner/releases/tag/v0.3.0)。不要把 GitHub 的整个源码 ZIP 当作 WorkBuddy 技能导入包。
+下载入口：[GitHub Releases](https://github.com/spikewzy/cn-agri-factor-miner/releases/tag/v0.4.0)。不要把 GitHub 的整个源码 ZIP 当作 WorkBuddy 技能导入包。
 
 ### WorkBuddy：逐步导入与首次使用
 
-1. 下载 **`cn-agri-factor-miner-workbuddy-v0.3.0.zip`**。包内根目录直接是 `SKILL.md` 和资源目录，已补齐 WorkBuddy 开放平台要求的中英文描述、版本和作者字段。
+1. 下载 **`cn-agri-factor-miner-workbuddy-v0.4.0.zip`**。包内根目录直接是 `SKILL.md` 和资源目录，已补齐 WorkBuddy 开放平台要求的中英文描述、版本和作者字段。
 2. 打开 WorkBuddy 左侧的 **专家·技能·连接器 → 技能**（部分版本直接显示“技能”）。进入 **添加技能 → 上传技能/导入本地技能包**，选择上述 ZIP；具体按钮名称以你的客户端版本为准。导入后在已安装列表启用它。这里是本地导入，不是公开市场上架。
 3. 新建一个任务，选定你可读写的研究工作目录。让 WorkBuddy 读取完整技能包并定位真实的 `SKILL_DIR`，不要让它猜安装路径。运行目录另选在研究工作区中。
 4. 粘贴下面这段提示词；WorkBuddy 不要求 Codex 的 `$技能名` 写法：
@@ -65,14 +65,40 @@ python3 -m unittest discover -s tests -v
 
 `dist/` 生成通用 ZIP、WorkBuddy ZIP 及对应的逐文件 SHA-256 清单。打包器只读取技能定义，不会打入 `runs/`、本机凭据或研究快照。代码升级会改变既有运行的代码哈希；旧运行应保留并建立关联的新运行，不修改旧记录来绕过校验。
 
-## 让它自己找数据（v0.3.0）
+## 优先使用你自己的 API / MCP
+
+v0.4.0 增加可编辑的 `data-sources.json`，Codex、WorkBuddy 和其他兼容 agent 使用同一套配置：
+
+**用户按顺序配置的 API / 已连接 MCP → 已有内置接口 → agent 主动搜索并试取其他基础日线接口。** 日线、仓单、合约和基本面按各自需求选择来源，有日线不代表有库存等基本面数据。
+
+不需要在聊天里发 Key。配置里只写 API 地址、Key 的环境变量名、真实 MCP 工具和参数映射。没有自己的源时，也不要求先购买某个数据服务。
+
+在终端生成模板（路径改为实际技能和研究目录）：
+
+```bash
+python3 "$SKILL_DIR/scripts/source_router.py" --work "$RUN_DIR/acquisition" init
+```
+
+编辑生成的 `data-sources.json`，启用并排列自己的来源。也可以直接对 agent 说：
+
+```text
+使用 cn-agri-factor-miner。先检查我已连接的 MCP 和项目的数据源配置，
+把真实可用的工具、接口及字段映射写入研究目录的 data-sources.json。
+优先调用我的来源，Key 只引用本机环境变量，缺失时再尝试已有接口。
+若仍没有基础日线数据，请继续搜索其他可用接口、真实试取并验证后接入。
+分别说明日线行情和基本面数据的实际覆盖、口径及缺口。
+```
+
+[完整中文配置教程：API Key、MCP 接力、日线回退、基本面接口](references/data-sources.md)。MCP 由宿主 agent 实际调用，脚本负责请求绑定、归档和验证；不能仅凭填写工具名就自动获得权限。模板默认关闭，按自己的真实服务商文档填写后再启用。
+
+## 让它自己找数据（v0.4.0）
 
 安装后，直接对 Codex、WorkBuddy 或其他兼容 agent 说：
 
 ```text
 使用 cn-agri-factor-miner 研究豆粕和豆油，周频决策、两周预测。
 先检查这个项目的已有数据、因子和修正记录；然后主动搜索基本面资料，
-调用已连接的 Tushare 或已有 Choice，补齐能取得的数据。
+优先调用我已有的 API / MCP，再使用其他已配置接口补齐数据。
 保留原始来源、查询参数、抓取时间、发布时间和数据版本，整理数据缺口。
 根据取得的证据提出至多 6 个假设、筛选至多 3 个，并说明反证和所缺数据。
 先给我候选规格与审核材料，在我明确批准前不要计算因子。
@@ -150,7 +176,7 @@ python3 .agents/skills/cn-agri-factor-miner/scripts/demo.py --output runs/my-fir
 
 每次演示请选择新的输出目录，避免覆盖旧记录。结果在 `runs/my-first-demo/demo-report.json`；人工审核包、实验记录和因子面板在其各个子目录中。运行产物不属于技能定义，不需要随公开技能发布。
 
-当前包含 **61 项核心与取数测试、4 项打包迁移测试、353 条合成数据记录和 3 个未经验证的豆粕/豆油假设**：季节性异常库存覆盖、未来两周到港与压榨平衡、受原料和油粕库存约束的压榨利润变化。合成数据只证明流程能够运行，不证明任何因子有预测能力。
+当前包含 **80 项核心与取数测试、4 项打包迁移测试、353 条合成数据记录和 3 个未经验证的豆粕/豆油假设**：季节性异常库存覆盖、未来两周到港与压榨平衡、受原料和油粕库存约束的压榨利润变化。合成数据只证明流程能够运行，不证明任何因子有预测能力。
 
 ### 看懂运行状态
 

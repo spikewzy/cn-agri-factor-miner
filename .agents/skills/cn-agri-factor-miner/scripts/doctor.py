@@ -9,7 +9,7 @@ import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-REQUIRED_FILES = ('SKILL.md', 'scripts/acquire.py', 'scripts/providers.py', 'scripts/sources.py', 'references/data-acquisition.md', 'scripts/cli.py', 'scripts/pit.py', 'scripts/factors.py',
+REQUIRED_FILES = ('SKILL.md', 'scripts/source_router.py', 'templates/data-sources.example.json', 'references/data-sources.md', 'scripts/acquire.py', 'scripts/providers.py', 'scripts/sources.py', 'references/data-acquisition.md', 'scripts/cli.py', 'scripts/pit.py', 'scripts/factors.py',
                   'scripts/records.py', 'scripts/workflow.py', 'scripts/adapter.py',
                   'scripts/demo.py', 'scripts/synthetic.py', 'templates/decision.json',
                   'templates/specification.json', 'examples/manifest.json',

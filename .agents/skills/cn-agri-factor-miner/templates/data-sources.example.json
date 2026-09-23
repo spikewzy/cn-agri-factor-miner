@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "allow_builtin": true,
+  "sources": [
+    {
+      "id": "my-daily-mcp",
+      "enabled": false,
+      "provider": "mcp",
+      "capability": "daily",
+      "commodities": ["soybean_meal", "soybean_oil"],
+      "read_only": true,
+      "server": "REPLACE_WITH_CONNECTED_SERVER",
+      "tool": "REPLACE_WITH_DISCOVERED_TOOL_NAME",
+      "arguments": {"symbol": "{contract}", "start": "{start}", "end": "{end}"},
+      "evidence": "REPLACE_WITH_TOOL_SCHEMA_AND_FIELD_DOCUMENTATION",
+      "daily": {
+        "series_type": "actual_contract", "price_unit": "unknown", "volume_unit": "unknown", "adjustment": "unknown",
+        "columns": {"date": "date", "contract": "symbol", "open": "open", "high": "high", "low": "low", "close": "close", "volume": "volume", "open_interest": "oi"}
+      }
+    },
+    {
+      "id": "my-daily-api",
+      "enabled": false,
+      "provider": "http",
+      "capability": "daily",
+      "commodities": ["soybean_meal", "soybean_oil"],
+      "read_only": true,
+      "request": {"url": "https://your-provider.example/futures/daily", "method": "GET", "params": {"symbol": "{contract}", "start": "{start}", "end": "{end}"}},
+      "auth": {"env": "MY_MARKET_DATA_KEY", "in": "header", "name": "Authorization", "prefix": "Bearer "},
+      "response": {"format": "json", "rows_path": ["data"], "row_limit": 1000},
+      "evidence": "REPLACE_WITH_PROVIDER_DOCUMENTATION_AND_PROBE_REFERENCE",
+      "daily": {
+        "series_type": "actual_contract", "price_unit": "unknown", "volume_unit": "unknown", "adjustment": "unknown",
+        "columns": {"date": "date", "contract": "symbol", "open": "open", "high": "high", "low": "low", "close": "close", "volume": "volume", "open_interest": "oi"}
+      }
+    }
+  ]
+}

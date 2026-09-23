@@ -13,3 +13,6 @@ __pycache__/
 .env
 .env.*
 !.env.example
+
+# User-specific data source configuration (templates remain distributable)
+data-sources.json

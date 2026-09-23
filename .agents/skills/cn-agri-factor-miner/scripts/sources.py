@@ -56,6 +56,8 @@ def make_plan(values, start, end):
         needs += [{'commodity': key, 'field': f, 'status': 'TO_DISCOVER'} for f in fields]
     return {'schema_version': 1, 'commodities': members, 'start': start, 'end': end, 'tasks': tasks,
             'searches': queries, 'fundamental_needs': needs,
+            'market_needs': [{'commodity': k, 'capability': 'daily', 'status': 'VERIFY_CONTRACT_THEN_ROUTE',
+                              'instruction': 'Use source_router.py daily: user-configured API/MCP, existing providers, then host discovery of usable daily APIs.'} for k in members],
             'choice': {'status': 'DISCOVER_INDICATOR_MAPPING', 'instruction': 'Use installed Choice docs/official indicator catalog; map csd/ctr/edb code, unit and sample before adding a query. Never invent EDB IDs.'},
             'limits': {'pages_per_request': 10, 'http_timeout_seconds': 25, 'max_download_bytes': 20000000},
             'note': 'Run host searches and API acquisition before claiming a data gap. Discovery symbols are not verified contract specifications.'}
